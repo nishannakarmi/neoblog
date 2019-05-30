@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Blog List{% endblock %}
+
+{% block main %}
+    <div class="col-md-8">
+        <h1 class="my-4">Latest Blogs</h1>
+        <table class="table table-bordered table-responsive">
+            <thead>
+            <th>Blog Title</th>
+            <th>Body</th>
+            <th>Category</th>
+            <th>Author</th>
+            <th>Published Date</th>
+            <th>Likes</th>
+            <th>Dislikes</th>
+            <th>Comments</th>
+            </thead>
+            <tbody>
+            {% for blog in object_list %}
+                <tr>
+                    <td>
+                        <span>
+                        <img src="{{ blog.image.url }}" width="30" height="30"
+                             alt="{{ blog.title|truncatechars:20 }} Image">
+                            <a href="{% url 'blog_detail' blog.id %}">{{ blog.title|truncatechars:20 }}</a>
+                        </span>
+                    </td>
+                    <td>{{ blog.body|truncatechars:50 }}</td>
+                    <td>{{ blog.category.name }}</td>
+                    <td>{{ blog.created_by.username }}</td>
+                    <td>{{ blog.published_date }}</td>
+                    <td>{{ blog.likes }}</td>
+                    <td>{{ blog.dis_likes }}</td>
+                    <td>{{ blog.comments.count }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% include 'blog/pagination.html' %}
+    </div>
+
+{% endblock %}
+

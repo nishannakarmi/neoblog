@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% load crispy_forms_tags %}
+
+
+{% block main %}
+    <div class="col-md-8">
+        <h1 class="my-4">Login</h1>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="submit" class="btn btn-primary" value="Login"/>
+            <input type="hidden" name="next" value="{{ next }}"/>
+        </form>
+
+        {# Assumes you setup the password_reset view in your URLconf #}
+        <div class="border-top my-3 alert alert-info" role="alert">
+            A simple way to if you have <a href="{% url 'password_reset' %}" class="alert-link">Forget Password</a>.
+            Give it a click.
+        </div>
+    </div>
+    <div class="pagination justify-content-center mb-4">
+    </div>
+
+
+{% endblock %}
