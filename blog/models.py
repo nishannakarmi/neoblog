@@ -29,8 +29,6 @@ class Blog(models.Model):
     updated_date = models.DateTimeField(null=True, blank=True)
     published_date = models.DateTimeField(null=True, blank=True)
     is_published = models.BooleanField(default=False)
-    likes = models.IntegerField(default=0)
-    dis_likes = models.IntegerField(default=0)
     views = models.IntegerField(default=0)
 
     def __str__(self):
@@ -40,6 +38,12 @@ class Blog(models.Model):
         ordering = ['-published_date']
         verbose_name = 'blog'
         verbose_name_plural = 'blogs'
+
+    def get_likes_count(self):
+        return self.likedislikes.filter(action='L').count()
+
+    def get_dislikes_count(self):
+        return self.likedislikes.filter(action='D').count()
 
 
 class Comment(models.Model):
@@ -70,5 +74,16 @@ class Profile(models.Model):
         return str(self.birth_date)
 
 
+class LikeDislike(models.Model):
+    ACTION_CHOICES = (
+        ('L', 'Liked'),
+        ('D', 'Disliked'),
+    )
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="likedislikes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    action = models.CharField(max_length=1, choices=ACTION_CHOICES)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(null=True, blank=True)
 
-
+    def __str__(self):
+        return f"{self.user.username} has {self.action} the blog '{self.blog.title}'"

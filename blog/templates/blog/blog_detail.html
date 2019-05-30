@@ -12,6 +12,17 @@
         <p class="lead">
             by
             <a href="#">{{ blog.created_by.username }}</a>
+            <span class="float-sm-right">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'blog_action' blog.id 'L' %}" class="btn btn-success" title="Like">Like: {{ blog.get_likes_count }}</a>
+                    <a href="{% url 'blog_action' blog.id 'D' %}" class="btn btn-warning" title="DisLike">DisLike: {{ blog.get_dislikes_count }}</a>
+                    <span class="btn btn-outline-primary">Views:{{ blog.views }}</span>
+                {% else %}
+                    <span class="badge badge-success">Likes: {{ blog.get_likes_count }}</span>
+                    <span class="badge badge-warning">DisLikes: {{ blog.get_dislikes_count }}</span>
+                    <span class="badge badge-primary">Views: {{ blog.views }}</span>
+                {% endif %}
+            </span>
         </p>
 
         <hr>

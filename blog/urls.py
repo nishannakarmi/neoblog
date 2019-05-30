@@ -16,6 +16,7 @@ urlpatterns = [
     path('profile/<int:pk>/', views.ProfileDetailView.as_view(), name='profile_detail'),
     path('profile/update/', views.update_profile, name='update_profile'),
     path('profile/change_password/', views.change_user_password, name='change_password'),
+    path('blog/<int:blog_id>/action/<str:action_type>/', views.add_blog_action, name='blog_action'),
     # path('blogs/', views.BlogListView.as_view(), name='blogs'),
     # path('blogger/<int:pk>', views.BlogListbyAuthorView.as_view(), name='blogs-by-author'),
     # path('blog/<int:pk>', views.BlogDetailView.as_view(), name='blog-detail'),

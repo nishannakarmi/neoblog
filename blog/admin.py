@@ -12,7 +12,7 @@ class BlogCommentInline(admin.TabularInline):
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    list_display = ['title', 'is_published', 'likes', 'dis_likes', 'category']
+    list_display = ['title', 'is_published', 'get_likes_count', 'get_dislikes_count', 'category']
     inlines = [BlogCommentInline]
     list_filter = ('is_published',)
 

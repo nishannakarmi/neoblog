@@ -19,6 +19,11 @@
             <div class="card-footer text-muted">
                 Published on {{ blog.published_date }} by
                 <a href="#">{{ blog.created_by.username }}</a>
+                <div class="align-self-md-auto">
+                    <span class="badge badge-success">Likes: {{ blog.get_likes_count }}</span>
+                    <span class="badge badge-warning">DisLikes: {{ blog.get_dislikes_count }}</span>
+                    <span class="badge badge-primary">Views: {{ blog.views }}</span>
+                </div>
             </div>
         </div>
         {% endfor %}

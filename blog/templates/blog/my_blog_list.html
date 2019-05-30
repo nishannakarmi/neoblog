@@ -31,8 +31,8 @@
                     <td>{{ blog.category.name }}</td>
                     <td>{{ blog.created_by.username }}</td>
                     <td>{{ blog.published_date }}</td>
-                    <td>{{ blog.likes }}</td>
-                    <td>{{ blog.dis_likes }}</td>
+                    <td>{{ blog.get_likes_count }}</td>
+                    <td>{{ blog.get_dislikes_count }}</td>
                     <td>{{ blog.comments.count }}</td>
                     <td>
                         <a class="btn btn-sm btn-dark" href="{% url 'update_blog' blog.id%}">Edit</a>

@@ -8,8 +8,9 @@ from django.utils.decorators import method_decorator
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import logout
+from django.utils.timezone import now
 
-from blog.models import Blog, Category, Comment, Profile
+from blog.models import Blog, Category, Comment, Profile, LikeDislike
 from blog.forms import UserForm, UserProfileForm, UserUpdateForm, ChangePasswordForm
 
 
@@ -237,4 +238,31 @@ def add_comment(request, blog_id):
                 raise Http404('You are not allowed to comment on this blog post')
 
             Comment.objects.create(text=comment, blog=blog, created_by=request.user)
+            return redirect('blog_detail', pk=blog.id)
+    else:
+        return redirect('blog_detail', pk=blog_id)
+
+
+@login_required(login_url='/login/')
+def add_blog_action(request, blog_id, action_type):
+    if action_type.upper() not in ['L', 'D']:
+        raise Http404('Invalid Action Type')
+
+    try:
+        blog = Blog.objects.get(pk=blog_id)
+    except Blog.DoesNotExist:
+        raise Http404('Invalid Blog')
+    else:
+        if not blog.is_published:
+            raise Http404('You cannot make action on unpublished blog')
+        try:
+            like_dislike_action = LikeDislike.objects.get(blog=blog, user=request.user)
+        except LikeDislike.DoesNotExist:
+            LikeDislike.objects.create(blog=blog, user=request.user, action=action_type)
+        else:
+            if like_dislike_action.action != action_type:
+                like_dislike_action.action = action_type
+                like_dislike_action.updated_date = now()
+                like_dislike_action.save()
+        finally:
             return redirect('blog_detail', pk=blog.id)
