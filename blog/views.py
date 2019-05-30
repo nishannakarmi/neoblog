@@ -1,10 +1,16 @@
-from django.shortcuts import render, redirect, Http404
+from django.shortcuts import render, redirect, Http404, HttpResponseRedirect
 from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import logout
 
-from blog.models import Blog, Category
-from blog.forms import UserForm, UserProfileForm
+from blog.models import Blog, Category, Comment, Profile
+from blog.forms import UserForm, UserProfileForm, UserUpdateForm, ChangePasswordForm
 
 
 # Create your views here.
@@ -54,13 +60,93 @@ class BlogListView(ListView):
         return context
 
 
+class MyBlogListView(ListView):
+    paginate_by = 1
+    template_name = 'blog/my_blog_list.html'
+
+    def get_queryset(self):
+        return Blog.objects.select_related('created_by', 'category').filter(created_by=self.request.user)
+
+
 class BlogDetailView(DetailView):
     model = Blog
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     pk = self.kwargs.get('pk', None)
-    #     if not pk:
-    #         raise Http404
+    def dispatch(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', None)
+        if not pk:
+            raise Http404
+        try:
+            blog = Blog.objects.get(pk=pk)
+        except Blog.DoesNotExist:
+            raise Http404('Invalid Blog Id')
+        else:
+            if not blog.is_published:
+                if request.user != blog.created_by:
+                    raise Http404('Invalid Blog Id or trying to access unpublished post')
+            else:
+                if request.user != blog.created_by:
+                    blog.views = blog.views + 1
+                    blog.save()
+        return super().dispatch(request, **kwargs)
+
+
+class ProfileDetailView(LoginRequiredMixin, DetailView):
+    model = Profile
+    context_object_name = 'profile'
+    template_name = 'blog/profile_detail.html'
+
+
+@method_decorator(login_required, name='dispatch')
+class BlogCreateView(CreateView):
+    model = Blog
+    template_name = 'blog/blog_create_form.html'
+    fields = ['title', 'body', 'image', 'category']
+
+    def get_success_url(self, new_obj=None):
+        return reverse_lazy('blog_detail', args=(new_obj.id,))
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.created_by = self.request.user
+        obj.save()
+        return HttpResponseRedirect(self.get_success_url(new_obj=obj))
+
+
+class BlogEditView(LoginRequiredMixin, UpdateView):
+    model = Blog
+    template_name = 'blog/blog_update_form.html'
+    fields = ['title', 'body', 'image', 'category']
+
+    def get_success_url(self):
+        return reverse_lazy('blog_detail', args=(self.object.id,))
+
+    def dispatch(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk')
+        try:
+            blog = Blog.objects.get(pk=pk)
+        except Blog.DoesNotExist:
+            raise Http404('Invalid Blog Id to edit')
+        else:
+            if blog.created_by != self.request.user:
+                raise Http404('You are not authorized to update this blog post')
+            return super().dispatch(request, **kwargs)
+
+
+class BlogDeleteView(LoginRequiredMixin, DeleteView):
+    model = Blog
+    template_name = 'blog/blog_delete_confirm.html'
+    success_url = reverse_lazy('my_blogs')
+
+    def dispatch(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk')
+        try:
+            blog = Blog.objects.get(pk=pk)
+        except Blog.DoesNotExist:
+            raise Http404('Invalid Blog Id to delete')
+        else:
+            if blog.created_by != self.request.user:
+                raise Http404('You are not authorized to delete this blog post')
+            return super().dispatch(request, **kwargs)
 
 
 def signup(request):
@@ -81,3 +167,74 @@ def signup(request):
         'user_form': user_form,
         'user_profile_form': user_profile_form
     })
+
+
+@login_required(login_url='/login/')
+def update_profile(request):
+    if request.method == 'POST':
+        user_form = UserUpdateForm(data=request.POST, instance=request.user)
+        user_profile_form = UserProfileForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if user_form.is_valid() and user_profile_form.is_valid():
+            user = user_form.save()
+            user.refresh_from_db()
+            user_profile_form.save(user=user)
+            return redirect('index')
+    else:
+        try:
+            profile = Profile.objects.get(pk=request.user.profile.id)
+        except Profile.DoesNotExist:
+            raise Http404('Invalid Profile')
+        else:
+            user_form = UserUpdateForm(instance=profile.user)
+            user_profile_form = UserProfileForm(instance=profile)
+
+    return render(request, 'blog/edit_profile.html', context={
+        'user_form': user_form,
+        'user_profile_form': user_profile_form
+    })
+
+
+@login_required(login_url='/login/')
+def change_user_password(request):
+    if request.method == 'POST':
+        change_password_form = ChangePasswordForm(data=request.POST, instance=request.user)
+
+        if change_password_form.is_valid():
+            change_password_form.save()
+            logout(request)
+            return redirect('index')
+
+    else:
+        try:
+            Profile.objects.get(pk=request.user.profile.id)
+        except Profile.DoesNotExist:
+            raise Http404('Invalid Profile')
+        else:
+            change_password_form = ChangePasswordForm()
+    return render(request, 'blog/change_password_form.html', context={
+        'change_password_form': change_password_form
+    })
+
+
+@login_required(login_url='/login/')
+def add_comment(request, blog_id):
+    if request.method == 'POST':
+        if not blog_id:
+            raise Http404('Blog Id should be provided to comment for')
+
+        comment = request.POST.get('comment', None)
+
+        if not comment:
+            raise Http404('Comment text should be provided')
+
+        try:
+            blog = Blog.objects.get(pk=blog_id)
+        except Blog.DoesNotExist:
+            raise Http404('Invalid Blog Id')
+        else:
+            if not blog.is_published:
+                raise Http404('You are not allowed to comment on this blog post')
+
+            Comment.objects.create(text=comment, blog=blog, created_by=request.user)
+            return redirect('blog_detail', pk=blog.id)

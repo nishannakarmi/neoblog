@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile Detail{% endblock %}
+
+{% block main %}
+    <div class="col-md-8">
+        <h1 class="my-4">Profile Details</h1>
+        <table class="table table-active">
+            <tbody>
+            <tr>
+                <td>Username:</td>
+                <td>{{ profile.user.username }}</td>
+            </tr>
+            <tr>
+                <td>Email Address:</td>
+                <td>{{ profile.user.email }}</td>
+            </tr>
+            <tr>
+                <td>First Name:</td>
+                <td>{{ profile.user.first_name }}</td>
+            </tr>
+            <tr>
+                <td>Last Name:</td>
+                <td>{{ profile.user.last_name }}</td>
+            </tr>
+            <tr>
+                <td>Age:</td>
+                <td>{{ profile.age }}</td>
+            </tr>
+            <tr>
+                <td>Birth Date:</td>
+                <td>{{ profile.birth_date }}</td>
+            </tr>
+            <tr>
+                <td>Sex:</td>
+                <td>{{ profile.sex }}</td>
+            </tr>
+            </tbody>
+        </table>
+        {% if request.user == profile.user %}
+            <span>
+                <a class="btn btn-outline-danger" href="{% url 'update_profile' %}">Update</a>
+                <a class="btn btn-outline-warning" href="{% url 'change_password' %}">Change Password</a>
+            </span>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Delete blog post{% endblock %}
+
+{% block main %}
+     <div class="col-md-8">
+        <h1 class="my-4">My Blogs</h1>
+        <form method="post">
+            {% csrf_token %}
+            <p>Are you sure you want to delete "{{ object }}"?</p>
+            <input class="btn btn-primary" type="submit" value="Confirm">
+            <a class="btn btn-info" href="{% url 'blog_detail' object.id %}">Cancel</a>
+        </form>
+     </div>
+{% endblock %}

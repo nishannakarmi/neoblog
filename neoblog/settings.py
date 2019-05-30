@@ -78,8 +78,11 @@ DATABASES = {
         'NAME': 'neo_blog',
         'USER': 'localhost_admin',
         'PASSWORD': 'nishan123',
-        'HOST': 'localhost',
-        'PORT': '3306'
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'OPTIONS': {
+            'sql_mode': 'traditional',
+        }
     }
 }
 

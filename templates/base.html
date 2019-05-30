@@ -48,8 +48,8 @@
                             {{ request.user.username }}
                         </a>
                         <div class="dropdown-menu">
-                            <a href="#" class="dropdown-item">Profile</a>
-                            <a href="#" class="dropdown-item">My Blogs</a>
+                            <a href="{% url 'profile_detail' request.user.id %}" class="dropdown-item">Profile</a>
+                            <a href="{% url 'my_blogs' %}" class="dropdown-item">My Blogs</a>
                             {% if request.user.is_superuser %}
                                 <a href="{% url 'admin:index' %}" class="dropdown-item">Django Admin</a>
                             {% endif %}

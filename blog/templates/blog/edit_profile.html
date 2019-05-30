@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block main %}
+    <div class="col-md-8">
+        <h1 class="my-4">
+            Edit Profile
+            <span>
+                <img src="{{ request.user.profile.image.url }}" width="150" height="150" alt="Profile Image">
+            </span>
+        </h1>
+
+        <form method="post" action="{% url 'update_profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ user_form|crispy }}
+            {{ user_profile_form|crispy }}
+            <a class="btn btn-outline-dark" href="{% url 'profile_detail' request.user.profile.id %}">Back</a>
+            <input type="submit" class="btn btn-outline-danger" value="Update Profile"/>
+        </form>
+    </div>
+{% endblock %}
