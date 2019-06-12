@@ -11,7 +11,8 @@ from django.contrib.auth import logout
 from django.utils.timezone import now
 
 from blog.models import Blog, Category, Comment, Profile, LikeDislike
-from blog.forms import UserForm, UserProfileForm, UserUpdateForm, ChangePasswordForm
+from blog.forms import UserForm, UserProfileForm, UserUpdateForm, ChangePasswordForm, BlogUpdateForm
+from blog.utils import superuser_only
 
 
 # Create your views here.
@@ -53,7 +54,12 @@ class BlogListView(ListView):
         if category_qs:
             filter_args['category__name__exact'] = category_qs
 
-        return Blog.objects.select_related('created_by', 'category').filter(**filter_args)
+        search = self.request.GET.get('search', None)
+        if search:
+            filter_args['title__icontains'] = search
+            filter_args['body__icontains'] = search
+
+        return Blog.objects.select_related('created_by', 'category').filter(**filter_args).distinct()
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -67,6 +73,19 @@ class MyBlogListView(ListView):
 
     def get_queryset(self):
         return Blog.objects.select_related('created_by', 'category').filter(created_by=self.request.user)
+
+
+class UnpublishBlogListView(ListView):
+    paginate_by = 1
+    template_name = 'blog/unpublish_blog_list.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.is_superuser:
+            raise Http404('Permission Denied')
+        return super(UnpublishBlogListView, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Blog.objects.filter(is_published=False)
 
 
 class BlogDetailView(DetailView):
@@ -111,6 +130,16 @@ class BlogCreateView(CreateView):
         obj.created_by = self.request.user
         obj.save()
         return HttpResponseRedirect(self.get_success_url(new_obj=obj))
+
+
+@method_decorator(superuser_only, name='dispatch')
+class BlogPublishView(UpdateView):
+    model = Blog
+    form_class = BlogUpdateForm
+    template_name = "blog/blog_publish.html"
+
+    def get_success_url(self):
+        return reverse_lazy('index')
 
 
 class BlogEditView(LoginRequiredMixin, UpdateView):

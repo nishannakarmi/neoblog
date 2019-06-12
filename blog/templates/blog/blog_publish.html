@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog Update{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block main %}
+    <div class="col-md-8">
+        <h1 class="my-4">Publish Blog</h1>
+        <p>{{ blog.title }}</p>
+        <p>{{ blog.body }}</p>
+        <p><img src="{{ blog.image.url }}" alt="Blog Image"></p>
+        <form method="post" action="{% url 'blog_publish' object.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="submit" class="btn btn-primary" value="Publish"/>
+            <a class="btn btn-info" href="{% url 'unpublish_blogs' %}">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

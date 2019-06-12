@@ -5,10 +5,12 @@
         <h5 class="card-header">Search</h5>
         <div class="card-body">
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search for...">
-                <span class="input-group-btn">
-                <button class="btn btn-info" type="button">Go!</button>
-              </span>
+                <form>
+                    <input name="search" type="text" class="form-control" placeholder="Search for...">
+                    <span class="input-group-btn">
+                    <button class="btn btn-info" type="submit">Go!</button>
+                </span>
+                </form>
             </div>
         </div>
     </div>
@@ -21,9 +23,10 @@
                 <div class="col-lg-6">
                     <ul class="list-unstyled mb-0">
                         {% for category in categories %}
-                        <li>
-                            <a href="{% url 'blogs' %}?category_name={{ category.name }}">{{ category.name|capfirst }} ({{ category.get_blog_count }})</a>
-                        </li>
+                            <li>
+                                <a href="{% url 'blogs' %}?category_name={{ category.name }}">{{ category.name|capfirst }}
+                                    ({{ category.get_blog_count }})</a>
+                            </li>
                         {% endfor %}
                     </ul>
                 </div>

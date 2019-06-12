@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Unpublished Blog List{% endblock %}
+
+{% block main %}
+    <div class="col-md-8">
+        <h1 class="my-4">Unpublished Blogs</h1>
+        <table class="table table-bordered table-responsive">
+            <thead>
+            <th>Blog Title</th>
+            <th>Body</th>
+            <th>Category</th>
+            <th>Author</th>
+            <th>Image</th>
+            <th>Action</th>
+            </thead>
+            <tbody>
+            {% for blog in object_list %}
+                <tr>
+                    <td>
+                        {{ blog.title|truncatechars:20 }}
+                    </td>
+                    <td>{{ blog.body|truncatechars:50 }}</td>
+                    <td>{{ blog.category.name }}</td>
+                    <td>{{ blog.created_by.username }}</td>
+                    <td><img src="{{ blog.image.url }}" width="30" height="30"
+                             alt="{{ blog.title|truncatechars:20 }} Image"></td>
+                    <td><a class="btn btn-outline-danger" href="{% url 'blog_publish' blog.id %}">Publish</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% include 'blog/pagination.html' %}
+    </div>
+
+{% endblock %}
+
