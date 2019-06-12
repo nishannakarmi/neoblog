@@ -7,7 +7,7 @@
 {% block main %}
     <div class="col-md-8">
         <h1 class="my-4">Update Blog</h1>
-        <form method="post" action="{% url 'create_blog' %}" enctype="multipart/form-data">
+        <form method="post" action="{% url 'update_blog' object.id %}" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form|crispy }}
             <input type="submit" class="btn btn-primary" value="Update"/>

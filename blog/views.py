@@ -35,8 +35,8 @@ class IndexView(TemplateView):
         response = super(IndexView, self).render_to_response(context, **response_kwargs)
         if self.request.user.is_authenticated:
             response.set_cookie('blog_type', 'ball')
-
-        response.set_cookie('blog_type', 'man')
+        else:
+            response.set_cookie('blog_type', 'man')
         return response
 
 
