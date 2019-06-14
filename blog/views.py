@@ -28,7 +28,7 @@ class IndexView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        context['blogs'] = Blog.objects.filter(is_published=True).order_by('-published_date')[:5]
+        context['blogs'] = Blog.objects.filter(is_published=True).order_by('published_date')[:5]
         context['categories'] = Category.objects.all()
         return self.render_to_response(context)
 
